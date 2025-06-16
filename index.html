@@ -197,30 +197,59 @@
         // --- AUTHENTICATION LOGIC ---
         async function checkAuthState() {
             try {
-                const res = await fetch('/api/me');
+                const token = localStorage.getItem('authToken');
+                const userEmail = localStorage.getItem('userEmail');
+                
+                if (!token) {
+                    // No token, user is not logged in
+                    updateUIForLoggedOut();
+                    return;
+                }
+                
+                const res = await fetch('/api/me', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'X-User-Email': userEmail || ''
+                    }
+                });
+                
                 const data = await res.json();
                 clientPrincipal = data.user || null;
+                
                 if (clientPrincipal) {
-                    authLinks.classList.add('hidden');
-                    userProfile.classList.remove('hidden');
-                    userProfile.classList.add('flex');
-                    userNameEl.textContent = clientPrincipal.email || clientPrincipal.name || 'User';
-                    updateMobileMenu(true);
-                    // Show dashboard
-                    userDashboard.classList.remove('hidden');
-                    dashboardUsername.textContent = clientPrincipal.email || clientPrincipal.name || 'User';
+                    updateUIForLoggedIn();
                 } else {
-                    authLinks.classList.remove('hidden');
-                    userProfile.classList.add('hidden');
-                    userProfile.classList.remove('flex');
-                    updateMobileMenu(false);
-                    userDashboard.classList.add('hidden');
+                    // Token is invalid, clear storage
+                    localStorage.removeItem('authToken');
+                    localStorage.removeItem('userEmail');
+                    updateUIForLoggedOut();
                 }
             } catch (error) {
                 console.error("Could not check auth state:", error);
-                updateMobileMenu(false);
-                userDashboard.classList.add('hidden');
+                localStorage.removeItem('authToken');
+                localStorage.removeItem('userEmail');
+                updateUIForLoggedOut();
             }
+        }
+        
+        function updateUIForLoggedIn() {
+            authLinks.classList.add('hidden');
+            userProfile.classList.remove('hidden');
+            userProfile.classList.add('flex');
+            userNameEl.textContent = clientPrincipal.email || 'User';
+            updateMobileMenu(true);
+            // Show dashboard
+            userDashboard.classList.remove('hidden');
+            dashboardUsername.textContent = clientPrincipal.email || 'User';
+        }
+        
+        function updateUIForLoggedOut() {
+            authLinks.classList.remove('hidden');
+            userProfile.classList.add('hidden');
+            userProfile.classList.remove('flex');
+            updateMobileMenu(false);
+            userDashboard.classList.add('hidden');
+            clientPrincipal = null;
         }
 
         function updateMobileMenu(isLoggedIn) {
@@ -265,7 +294,13 @@
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ email, password })
                     });
+                    
                     if (res.ok) {
+                        const data = await res.json();
+                        // Store token and user info in localStorage
+                        localStorage.setItem('authToken', data.token);
+                        localStorage.setItem('userEmail', data.user.email);
+                        
                         loginModal.classList.add('hidden');
                         await checkAuthState();
                     } else {
@@ -293,6 +328,19 @@
                         body: JSON.stringify({ email, password })
                     });
                     if (res.ok) {
+                        // After successful registration, automatically log in
+                        const loginRes = await fetch('/api/login', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ email, password })
+                        });
+                        
+                        if (loginRes.ok) {
+                            const data = await loginRes.json();
+                            localStorage.setItem('authToken', data.token);
+                            localStorage.setItem('userEmail', data.user.email);
+                        }
+                        
                         signupModal.classList.add('hidden');
                         await checkAuthState();
                     } else {
@@ -308,7 +356,18 @@
         }
         // --- Logout ---
         async function logout() {
-            await fetch('/api/logout', { method: 'POST' });
+            // Clear localStorage
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('userEmail');
+            
+            // Call logout endpoint (optional)
+            try {
+                await fetch('/api/logout', { method: 'POST' });
+            } catch (error) {
+                console.error('Logout API call failed:', error);
+            }
+            
+            // Update UI
             await checkAuthState();
         }
         if (logoutBtn) logoutBtn.onclick = logout;
@@ -344,12 +403,23 @@
 
             // If we are here, the user is logged in. Proceed with submission.
             const originalButtonText = quoteButton.innerHTML;
-            quoteButton.innerHTML = `<svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white inline" ...></svg>Submitting...`;
+            quoteButton.innerHTML = `<svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>Submitting...`;
             quoteButton.disabled = true;
             const formData = new FormData(uploadForm);
             
+            // Get auth token for request
+            const token = localStorage.getItem('authToken');
+            const headers = {};
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
+            
             try {
-                const response = await fetch('/api/get-quote', { method: 'POST', body: formData });
+                const response = await fetch('/api/get-quote', { 
+                    method: 'POST', 
+                    body: formData,
+                    headers: headers
+                });
                 const resultText = await response.text();
                 if (response.ok) {
                     uploadForm.classList.add('hidden');

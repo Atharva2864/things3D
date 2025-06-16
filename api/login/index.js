@@ -20,8 +20,18 @@ module.exports = async function (context, req) {
         if (!user || user.password !== hash) {
             return { status: 401, body: "Invalid credentials." };
         }
-        // Set cookie/session (for demo, just return user info)
-        return { status: 200, body: { email } };
+        // Generate session token
+        const sessionToken = crypto.randomBytes(32).toString('hex');
+        
+        // For demo purposes, we'll return the token and email
+        // In production, you'd store the session in a database or cache
+        return { 
+            status: 200, 
+            body: { 
+                user: { email: user.email },
+                token: sessionToken
+            } 
+        };
     } catch (err) {
         context.log.error(err);
         return { status: 401, body: "Invalid credentials." };
