@@ -328,18 +328,10 @@
                         body: JSON.stringify({ email, password })
                     });
                     if (res.ok) {
-                        // After successful registration, automatically log in
-                        const loginRes = await fetch('/api/login', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ email, password })
-                        });
-                        
-                        if (loginRes.ok) {
-                            const data = await loginRes.json();
-                            localStorage.setItem('authToken', data.token);
-                            localStorage.setItem('userEmail', data.user.email);
-                        }
+                        // Get the registration response with token
+                        const data = await res.json();
+                        localStorage.setItem('authToken', data.token);
+                        localStorage.setItem('userEmail', data.email);
                         
                         signupModal.classList.add('hidden');
                         await checkAuthState();
