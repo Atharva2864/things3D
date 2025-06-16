@@ -2,6 +2,6 @@
   "name": "api",
   "version": "1.0.0",
   "dependencies": {
-    "@azure/data-tables": "^14.2.0"
+    "@azure/data-tables": "^13.2.2"
   }
 }
