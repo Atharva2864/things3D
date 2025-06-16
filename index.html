@@ -17,14 +17,50 @@
     <style>
         body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
         .hero-gradient { background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); }
-        .btn-primary { @apply bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:bg-blue-700 transition-all duration-300 ease-in-out transform hover:-translate-y-1; }
-        .btn-secondary { @apply bg-gray-700 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:bg-gray-800 transition-all duration-300 ease-in-out transform hover:-translate-y-1; }
-        .section-title { @apply text-3xl md:text-4xl font-bold text-gray-800 text-center; }
-        .gallery-item .overlay { @apply absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-60 transition-all duration-300 flex items-center justify-center; }
-        .gallery-item .overlay-text { @apply text-white text-lg font-bold opacity-0 group-hover:opacity-100 transition-opacity duration-300; }
     </style>
 </head>
 <body class="text-gray-700">
+
+    <!-- Login Modal -->
+    <div id="login-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 hidden">
+        <div class="bg-white rounded-lg shadow-lg w-full max-w-sm p-8 relative">
+            <button id="close-login-modal" class="absolute top-2 right-2 text-gray-400 hover:text-gray-700 text-2xl">&times;</button>
+            <h2 class="text-2xl font-bold mb-4 text-center">Login</h2>
+            <form id="custom-login-form" class="space-y-4">
+                <div>
+                    <label for="login-email" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                    <input type="email" id="login-email" name="email" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                <div>
+                    <label for="login-password" class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                    <input type="password" id="login-password" name="password" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                <button type="submit" class="w-full bg-blue-600 text-white font-semibold py-2 rounded-lg hover:bg-blue-700 transition">Login</button>
+                <p class="text-sm text-center mt-2">Don't have an account? <button type="button" id="show-signup" class="text-blue-600 hover:underline">Sign up</button></p>
+                <p id="login-error" class="text-red-600 text-sm mt-2 hidden"></p>
+            </form>
+        </div>
+    </div>
+    <!-- Signup Modal -->
+    <div id="signup-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 hidden">
+        <div class="bg-white rounded-lg shadow-lg w-full max-w-sm p-8 relative">
+            <button id="close-signup-modal" class="absolute top-2 right-2 text-gray-400 hover:text-gray-700 text-2xl">&times;</button>
+            <h2 class="text-2xl font-bold mb-4 text-center">Sign Up</h2>
+            <form id="custom-signup-form" class="space-y-4">
+                <div>
+                    <label for="signup-email" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                    <input type="email" id="signup-email" name="email" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                <div>
+                    <label for="signup-password" class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                    <input type="password" id="signup-password" name="password" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                <button type="submit" class="w-full bg-blue-600 text-white font-semibold py-2 rounded-lg hover:bg-blue-700 transition">Sign Up</button>
+                <p class="text-sm text-center mt-2">Already have an account? <button type="button" id="show-login" class="text-blue-600 hover:underline">Login</button></p>
+                <p id="signup-error" class="text-red-600 text-sm mt-2 hidden"></p>
+            </form>
+        </div>
+    </div>
 
     <!-- Header & Navigation -->
     <header class="bg-white/80 backdrop-blur-lg fixed top-0 left-0 right-0 z-50 shadow-sm">
@@ -36,7 +72,7 @@
                 
                 <!-- Auth Buttons -->
                 <div id="auth-links">
-                    <a href="/.auth/login/google" class="font-semibold text-blue-600 hover:text-blue-800">Login</a>
+                    <button id="open-login-modal" class="font-semibold text-blue-600 hover:text-blue-800">Login</button>
                 </div>
     
                 <!-- User Profile Area (hidden by default) -->
@@ -62,8 +98,8 @@
                 <h1 class="text-4xl md:text-6xl font-extrabold text-gray-800 leading-tight mb-4">Bringing Your Ideas to Life</h1>
                 <p class="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto mb-8">If you can imagine it, we can print it.</p>
                 <div class="flex justify-center space-x-4">
-                    <a href="#custom-prints" class="btn-primary">Upload Your Design</a>
-                    <a href="#gallery" class="btn-secondary">View Our Work</a>
+                    <a href="#custom-prints" class="bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:bg-blue-700 transition-all duration-300 ease-in-out transform hover:-translate-y-1">Upload Your Design</a>
+                    <a href="#gallery" class="bg-gray-700 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:bg-gray-800 transition-all duration-300 ease-in-out transform hover:-translate-y-1">View Our Work</a>
                 </div>
             </div>
         </section>
@@ -71,11 +107,11 @@
         <!-- Gallery Section -->
         <section id="gallery" class="py-20 bg-white">
             <div class="container mx-auto px-6">
-                <h2 class="section-title mb-12">Our Creations</h2>
+                <h2 class="text-3xl md:text-4xl font-bold text-gray-800 text-center mb-12">Our Creations</h2>
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-                    <div class="group relative rounded-lg overflow-hidden shadow-lg transform hover:-translate-y-2 transition-transform duration-300"><img src="https://placehold.co/600x400/e2e8f0/334155?text=Geometric+Vase" class="w-full h-full object-cover"><div class="overlay"><span class="overlay-text">Geometric Vase</span></div></div>
-                    <div class="group relative rounded-lg overflow-hidden shadow-lg transform hover:-translate-y-2 transition-transform duration-300"><img src="https://placehold.co/600x400/94a3b8/ffffff?text=Mechanical+Part" class="w-full h-full object-cover"><div class="overlay"><span class="overlay-text">Mechanical Part</span></div></div>
-                    <div class="group relative rounded-lg overflow-hidden shadow-lg transform hover:-translate-y-2 transition-transform duration-300"><img src="https://placehold.co/600x400/64748b/ffffff?text=Character+Model" class="w-full h-full object-cover"><div class="overlay"><span class="overlay-text">Character Model</span></div></div>
+                    <div class="group relative rounded-lg overflow-hidden shadow-lg transform hover:-translate-y-2 transition-transform duration-300"><img src="https://placehold.co/600x400/e2e8f0/334155?text=Geometric+Vase" class="w-full h-full object-cover"><div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-60 transition-all duration-300 flex items-center justify-center"><span class="text-white text-lg font-bold opacity-0 group-hover:opacity-100 transition-opacity duration-300">Geometric Vase</span></div></div>
+                    <div class="group relative rounded-lg overflow-hidden shadow-lg transform hover:-translate-y-2 transition-transform duration-300"><img src="https://placehold.co/600x400/94a3b8/ffffff?text=Mechanical+Part" class="w-full h-full object-cover"><div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-60 transition-all duration-300 flex items-center justify-center"><span class="text-white text-lg font-bold opacity-0 group-hover:opacity-100 transition-opacity duration-300">Mechanical Part</span></div></div>
+                    <div class="group relative rounded-lg overflow-hidden shadow-lg transform hover:-translate-y-2 transition-transform duration-300"><img src="https://placehold.co/600x400/64748b/ffffff?text=Character+Model" class="w-full h-full object-cover"><div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-60 transition-all duration-300 flex items-center justify-center"><span class="text-white text-lg font-bold opacity-0 group-hover:opacity-100 transition-opacity duration-300">Character Model</span></div></div>
                 </div>
             </div>
         </section>
@@ -83,7 +119,7 @@
         <!-- Custom Prints Section -->
         <section id="custom-prints" class="py-20 bg-gray-50">
             <div class="container mx-auto px-6">
-                <h2 class="section-title mb-4">Have an idea? Print it with us.</h2>
+                <h2 class="text-3xl md:text-4xl font-bold text-gray-800 text-center mb-4">Have an idea? Print it with us.</h2>
                 <p class="text-center max-w-2xl mx-auto mb-12 text-gray-600">Upload your 3D model file (.STL, .OBJ, .3MF) and we'll get back to you with a personalized quote.</p>
                 <div class="max-w-2xl mx-auto bg-white p-8 md:p-12 rounded-xl shadow-lg">
                     <form id="upload-form">
@@ -116,7 +152,7 @@
                             </div>
                         </div>
                         <div class="mt-8">
-                            <button type="submit" class="w-full btn-primary">Get a Quote</button>
+                            <button type="submit" class="w-full bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:bg-blue-700 transition-all duration-300 ease-in-out transform hover:-translate-y-1">Get a Quote</button>
                         </div>
                     </form>
                     <!-- Success Message -->
@@ -143,45 +179,139 @@
         const userProfile = document.getElementById('user-profile');
         const userNameEl = document.getElementById('user-name');
         const mobileMenuEl = document.getElementById('mobile-menu');
+        const loginModal = document.getElementById('login-modal');
+        const signupModal = document.getElementById('signup-modal');
+        const openLoginModalBtn = document.getElementById('open-login-modal');
+        const closeLoginModalBtn = document.getElementById('close-login-modal');
+        const closeSignupModalBtn = document.getElementById('close-signup-modal');
+        const customLoginForm = document.getElementById('custom-login-form');
+        const customSignupForm = document.getElementById('custom-signup-form');
+        const loginError = document.getElementById('login-error');
+        const signupError = document.getElementById('signup-error');
+        const showSignupBtn = document.getElementById('show-signup');
+        const showLoginBtn = document.getElementById('show-login');
+        const userDashboard = document.getElementById('user-dashboard');
+        const dashboardUsername = document.getElementById('dashboard-username');
+        const logoutBtn = document.getElementById('logout-btn');
 
         // --- AUTHENTICATION LOGIC ---
         async function checkAuthState() {
             try {
-                const res = await fetch('/.auth/me');
+                const res = await fetch('/api/me');
                 const data = await res.json();
-                clientPrincipal = data.clientPrincipal; // Store user info globally
-
+                clientPrincipal = data.user || null;
                 if (clientPrincipal) {
-                    // User is logged in
                     authLinks.classList.add('hidden');
                     userProfile.classList.remove('hidden');
                     userProfile.classList.add('flex');
-                    userNameEl.textContent = clientPrincipal.userDetails;
+                    userNameEl.textContent = clientPrincipal.email || clientPrincipal.name || 'User';
                     updateMobileMenu(true);
+                    // Show dashboard
+                    userDashboard.classList.remove('hidden');
+                    dashboardUsername.textContent = clientPrincipal.email || clientPrincipal.name || 'User';
                 } else {
-                    // User is logged out
                     authLinks.classList.remove('hidden');
                     userProfile.classList.add('hidden');
                     userProfile.classList.remove('flex');
                     updateMobileMenu(false);
+                    userDashboard.classList.add('hidden');
                 }
             } catch (error) {
                 console.error("Could not check auth state:", error);
                 updateMobileMenu(false);
+                userDashboard.classList.add('hidden');
             }
         }
 
         function updateMobileMenu(isLoggedIn) {
             let menuHTML = `<a href="#gallery" class="block py-2 text-gray-600 hover:text-blue-600">Gallery</a><a href="#custom-prints" class="block py-2 text-gray-600 hover:text-blue-600">Custom Prints</a>`;
             if (isLoggedIn) {
-                menuHTML += `<a href="/.auth/logout" class="block mt-4 text-center btn-primary w-full">Logout</a>`;
+                menuHTML += `<button id='mobile-logout-btn' class='block mt-4 text-center bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:bg-blue-700 transition-all duration-300 ease-in-out transform hover:-translate-y-1 w-full'>Logout</button>`;
             } else {
-                menuHTML += `<a href="/.auth/login/google" class="block mt-4 text-center btn-primary w-full">Login</a>`;
+                menuHTML += `<button id='mobile-login-btn' class='block mt-4 text-center bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:bg-blue-700 transition-all duration-300 ease-in-out transform hover:-translate-y-1 w-full'>Login</button>`;
             }
             mobileMenuEl.innerHTML = menuHTML;
+            if (!isLoggedIn) {
+                const mobileLoginBtn = document.getElementById('mobile-login-btn');
+                if (mobileLoginBtn) mobileLoginBtn.onclick = () => loginModal.classList.remove('hidden');
+            } else {
+                const mobileLogoutBtn = document.getElementById('mobile-logout-btn');
+                if (mobileLogoutBtn) mobileLogoutBtn.onclick = logout;
+            }
         }
 
         document.addEventListener('DOMContentLoaded', checkAuthState);
+
+        // --- Login/Signup Modal Logic ---
+        if (openLoginModalBtn) openLoginModalBtn.onclick = () => { loginModal.classList.remove('hidden'); loginError.classList.add('hidden'); };
+        if (closeLoginModalBtn) closeLoginModalBtn.onclick = () => loginModal.classList.add('hidden');
+        if (closeSignupModalBtn) closeSignupModalBtn.onclick = () => signupModal.classList.add('hidden');
+        if (showSignupBtn) showSignupBtn.onclick = () => { loginModal.classList.add('hidden'); signupModal.classList.remove('hidden'); signupError.classList.add('hidden'); };
+        if (showLoginBtn) showLoginBtn.onclick = () => { signupModal.classList.add('hidden'); loginModal.classList.remove('hidden'); loginError.classList.add('hidden'); };
+        window.addEventListener('keydown', (e) => { if (e.key === 'Escape') { loginModal.classList.add('hidden'); signupModal.classList.add('hidden'); } });
+        loginModal.addEventListener('click', (e) => { if (e.target === loginModal) loginModal.classList.add('hidden'); });
+        signupModal.addEventListener('click', (e) => { if (e.target === signupModal) signupModal.classList.add('hidden'); });
+
+        // --- Custom Login Form Submission ---
+        if (customLoginForm) {
+            customLoginForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                loginError.classList.add('hidden');
+                const email = document.getElementById('login-email').value;
+                const password = document.getElementById('login-password').value;
+                try {
+                    const res = await fetch('/api/login', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email, password })
+                    });
+                    if (res.ok) {
+                        loginModal.classList.add('hidden');
+                        await checkAuthState();
+                    } else {
+                        const err = await res.text();
+                        loginError.textContent = err || 'Login failed.';
+                        loginError.classList.remove('hidden');
+                    }
+                } catch (err) {
+                    loginError.textContent = 'Network error.';
+                    loginError.classList.remove('hidden');
+                }
+            });
+        }
+        // --- Custom Signup Form Submission ---
+        if (customSignupForm) {
+            customSignupForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                signupError.classList.add('hidden');
+                const email = document.getElementById('signup-email').value;
+                const password = document.getElementById('signup-password').value;
+                try {
+                    const res = await fetch('/api/register', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email, password })
+                    });
+                    if (res.ok) {
+                        signupModal.classList.add('hidden');
+                        await checkAuthState();
+                    } else {
+                        const err = await res.text();
+                        signupError.textContent = err || 'Signup failed.';
+                        signupError.classList.remove('hidden');
+                    }
+                } catch (err) {
+                    signupError.textContent = 'Network error.';
+                    signupError.classList.remove('hidden');
+                }
+            });
+        }
+        // --- Logout ---
+        async function logout() {
+            await fetch('/api/logout', { method: 'POST' });
+            await checkAuthState();
+        }
+        if (logoutBtn) logoutBtn.onclick = logout;
 
         // --- Mobile Menu Toggle ---
         const mobileMenuButton = document.getElementById('mobile-menu-button');
@@ -205,13 +335,11 @@
 
         uploadForm.addEventListener('submit', async function(e) {
             e.preventDefault();
-            
             // Check if user is logged in BEFORE submitting
             if (!clientPrincipal) {
-                alert("Please log in to submit your quote. You will be redirected to the login page.");
-                // We save the current page URL so Google can redirect back here after login
-                window.location.href = `/.auth/login/google?post_login_redirect_uri=${window.location.pathname}`;
-                return; // Stop the form submission
+                alert("Please log in to submit your quote.");
+                loginModal.classList.remove('hidden');
+                return;
             }
 
             // If we are here, the user is logged in. Proceed with submission.
