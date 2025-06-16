@@ -9,6 +9,12 @@ const ACCOUNT_KEY = process.env.AZURE_STORAGE_KEY;
 const ENDPOINT = `https://${ACCOUNT_NAME}.table.core.windows.net`;
 
 module.exports = async function (context, req) {
+    // Validate environment variables
+    if (!ACCOUNT_NAME || !ACCOUNT_KEY) {
+        context.log.error('Missing Azure Storage environment variables');
+        return { status: 500, body: "Server configuration error." };
+    }
+    
     const { email, password } = req.body || {};
     if (!email || !password) {
         return { status: 400, body: "Email and password required." };
