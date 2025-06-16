@@ -13,7 +13,12 @@ module.exports = async function (context, req) {
     // Validate environment variables
     if (!ACCOUNT_NAME || !ACCOUNT_KEY) {
         context.log.error('Missing Azure Storage environment variables');
-        return { status: 500, body: "Server configuration error." };
+        context.res = { 
+            status: 500, 
+            body: { error: "Azure Storage configuration missing. Please set AZURE_STORAGE_ACCOUNT and AZURE_STORAGE_KEY environment variables." },
+            headers: { 'Content-Type': 'application/json' }
+        };
+        return;
     }
     
     const { email, password } = req.body || {};
@@ -31,10 +36,24 @@ module.exports = async function (context, req) {
         }
         // Create user
         await client.createEntity({ partitionKey: TABLE_NAME, rowKey: email, email, password: hash });
-        // Set cookie/session (for demo, just return user info)
-        return { status: 200, body: { email } };
+        // Set simple session token
+        const token = Buffer.from(`${email}:${Date.now()}`).toString('base64');
+        
+        context.res = {
+            status: 200,
+            body: { email, token },
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        };
+        return;
     } catch (err) {
         context.log.error(err);
-        return { status: 500, body: "Registration failed." };
+        context.res = {
+            status: 500,
+            body: { error: "Registration failed: " + err.message },
+            headers: { 'Content-Type': 'application/json' }
+        };
+        return;
     }
 };
