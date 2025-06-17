@@ -79,7 +79,7 @@
                 <!-- User Profile Area (hidden by default) -->
                 <div id="user-profile" class="hidden items-center space-x-4">
                     <span id="user-name" class="font-semibold text-gray-700"></span>
-                    <a href="/.auth/logout" class="text-sm text-gray-500 hover:text-blue-600">Logout</a>
+                    <button onclick="logout()" class="text-sm text-gray-500 hover:text-blue-600">Logout</button>
                 </div>
     
             </nav>
@@ -180,20 +180,7 @@
         const userProfile = document.getElementById('user-profile');
         const userNameEl = document.getElementById('user-name');
         const mobileMenuEl = document.getElementById('mobile-menu');
-        const loginModal = document.getElementById('login-modal');
-        const signupModal = document.getElementById('signup-modal');
         const openLoginModalBtn = document.getElementById('open-login-modal');
-        const closeLoginModalBtn = document.getElementById('close-login-modal');
-        const closeSignupModalBtn = document.getElementById('close-signup-modal');
-        const customLoginForm = document.getElementById('custom-login-form');
-        const customSignupForm = document.getElementById('custom-signup-form');
-        const loginError = document.getElementById('login-error');
-        const signupError = document.getElementById('signup-error');
-        const showSignupBtn = document.getElementById('show-signup');
-        const showLoginBtn = document.getElementById('show-login');
-        const userDashboard = document.getElementById('user-dashboard');
-        const dashboardUsername = document.getElementById('dashboard-username');
-        const logoutBtn = document.getElementById('logout-btn');
 
         // --- AUTHENTICATION LOGIC ---
         async function checkAuthState() {
@@ -239,9 +226,11 @@
             userProfile.classList.add('flex');
             userNameEl.textContent = clientPrincipal.email || 'User';
             updateMobileMenu(true);
-            // Show dashboard
-            userDashboard.classList.remove('hidden');
-            dashboardUsername.textContent = clientPrincipal.email || 'User';
+            // Show dashboard if it exists
+            const userDashboard = document.getElementById('user-dashboard');
+            const dashboardUsername = document.getElementById('dashboard-username');
+            if (userDashboard) userDashboard.classList.remove('hidden');
+            if (dashboardUsername) dashboardUsername.textContent = clientPrincipal.email || 'User';
         }
         
         function updateUIForLoggedOut() {
@@ -249,7 +238,8 @@
             userProfile.classList.add('hidden');
             userProfile.classList.remove('flex');
             updateMobileMenu(false);
-            userDashboard.classList.add('hidden');
+            const userDashboard = document.getElementById('user-dashboard');
+            if (userDashboard) userDashboard.classList.add('hidden');
             clientPrincipal = null;
         }
 
@@ -274,6 +264,17 @@
 
         // --- Login/Signup Modal Logic ---
         if (openLoginModalBtn) openLoginModalBtn.onclick = () => { loginModal.classList.remove('hidden'); loginError.classList.add('hidden'); };
+        const closeLoginModalBtn = document.getElementById('close-login-modal');
+        const closeSignupModalBtn = document.getElementById('close-signup-modal');
+        const loginModal = document.getElementById('login-modal');
+        const signupModal = document.getElementById('signup-modal');
+        const loginError = document.getElementById('login-error');
+        const signupError = document.getElementById('signup-error');
+        const showSignupBtn = document.getElementById('show-signup');
+        const showLoginBtn = document.getElementById('show-login');
+        const customLoginForm = document.getElementById('custom-login-form');
+        const customSignupForm = document.getElementById('custom-signup-form');
+
         if (closeLoginModalBtn) closeLoginModalBtn.onclick = () => loginModal.classList.add('hidden');
         if (closeSignupModalBtn) closeSignupModalBtn.onclick = () => signupModal.classList.add('hidden');
         if (showSignupBtn) showSignupBtn.onclick = () => { loginModal.classList.add('hidden'); signupModal.classList.remove('hidden'); signupError.classList.add('hidden'); };
@@ -315,6 +316,7 @@
                 }
             });
         }
+
         // --- Custom Signup Form Submission ---
         if (customSignupForm) {
             customSignupForm.addEventListener('submit', async function(e) {
@@ -353,11 +355,11 @@
                         signupError.style.color = 'green';
                         signupError.classList.remove('hidden');
                         
-                        setTimeout(() => {
+                        setTimeout(async () => {
                             signupModal.classList.add('hidden');
                             signupError.classList.add('hidden');
                             signupError.style.color = 'red'; // Reset color
-                            checkAuthState();
+                            await checkAuthState(); // This should update the UI properly
                         }, 1500);
                         
                     } else {
@@ -377,7 +379,8 @@
                 }
             });
         }
-        // --- Logout ---
+        
+        // --- LOGOUT ---
         async function logout() {
             // Clear localStorage
             localStorage.removeItem('authToken');
@@ -393,8 +396,7 @@
             // Update UI
             await checkAuthState();
         }
-        if (logoutBtn) logoutBtn.onclick = logout;
-
+        
         // --- Mobile Menu Toggle ---
         const mobileMenuButton = document.getElementById('mobile-menu-button');
         mobileMenuButton.addEventListener('click', () => mobileMenuEl.classList.toggle('hidden'));
