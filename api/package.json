@@ -1,7 +1,17 @@
 {
-  "name": "api",
+  "name": "things3d-api",
   "version": "1.0.0",
+  "description": "Azure Functions API for things3D",
+  "main": "index.js",
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "dependencies": {
-    "@azure/data-tables": "^13.2.2"
+    "@azure/data-tables": "^13.2.2",
+    "parse-multipart-data": "^1.5.0"
+  },
+  "scripts": {
+    "start": "func start",
+    "test": "echo \"No tests specified\""
   }
 }

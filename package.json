@@ -1,0 +1,16 @@
+{
+  "name": "things3d-website",
+  "version": "1.0.0",
+  "description": "Professional 3D Printing Services Website",
+  "scripts": {
+    "start": "echo 'Static website - no build required'",
+    "build": "echo 'Static website - no build required'"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Atharva2864/things3d.git"
+  },
+  "keywords": ["3d-printing", "website", "azure-static-web-apps"],
+  "author": "Atharva",
+  "license": "MIT"
+}
