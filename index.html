@@ -320,30 +320,60 @@
             customSignupForm.addEventListener('submit', async function(e) {
                 e.preventDefault();
                 signupError.classList.add('hidden');
+                
                 const email = document.getElementById('signup-email').value;
                 const password = document.getElementById('signup-password').value;
+                
+                // Show loading state
+                const submitBtn = e.target.querySelector('button[type="submit"]');
+                const originalText = submitBtn.textContent;
+                submitBtn.textContent = 'Signing up...';
+                submitBtn.disabled = true;
+                
                 try {
+                    console.log('Attempting to register user:', email);
                     const res = await fetch('/api/register', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ email, password })
                     });
+                    
+                    console.log('Registration response status:', res.status);
+                    
                     if (res.ok) {
                         // Get the registration response with token
                         const data = await res.json();
+                        console.log('Registration successful:', data);
+                        
                         localStorage.setItem('authToken', data.token);
                         localStorage.setItem('userEmail', data.email);
                         
-                        signupModal.classList.add('hidden');
-                        await checkAuthState();
+                        // Show success message briefly
+                        signupError.textContent = 'Account created successfully! Logging you in...';
+                        signupError.style.color = 'green';
+                        signupError.classList.remove('hidden');
+                        
+                        setTimeout(() => {
+                            signupModal.classList.add('hidden');
+                            signupError.classList.add('hidden');
+                            signupError.style.color = 'red'; // Reset color
+                            checkAuthState();
+                        }, 1500);
+                        
                     } else {
-                        const err = await res.text();
-                        signupError.textContent = err || 'Signup failed.';
+                        const errorText = await res.text();
+                        console.error('Registration failed:', res.status, errorText);
+                        signupError.textContent = errorText || `Signup failed (${res.status})`;
                         signupError.classList.remove('hidden');
                     }
                 } catch (err) {
-                    signupError.textContent = 'Network error.';
+                    console.error('Network error during registration:', err);
+                    signupError.textContent = 'Network error. Please check your connection and try again.';
                     signupError.classList.remove('hidden');
+                } finally {
+                    // Reset button state
+                    submitBtn.textContent = originalText;
+                    submitBtn.disabled = false;
                 }
             });
         }
