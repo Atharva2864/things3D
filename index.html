@@ -37,7 +37,6 @@
                     <input type="password" id="login-password" name="password" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
                 </div>
                 <button type="submit" class="w-full bg-blue-600 text-white font-semibold py-2 rounded-lg hover:bg-blue-700 transition">Login</button>
-                <p class="text-sm text-center mt-2">Don't have an account? <button type="button" id="show-signup" class="text-blue-600 hover:underline">Sign up</button></p>
                 <p id="login-error" class="text-red-600 text-sm mt-2 hidden"></p>
             </form>
         </div>
@@ -56,8 +55,7 @@
                     <label for="signup-password" class="block text-sm font-medium text-gray-700 mb-1">Password</label>
                     <input type="password" id="signup-password" name="password" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
                 </div>
-                <button type="submit" class="w-full bg-blue-600 text-white font-semibold py-2 rounded-lg hover:bg-blue-700 transition">Sign Up</button>
-                <p class="text-sm text-center mt-2">Already have an account? <button type="button" id="show-login" class="text-blue-600 hover:underline">Login</button></p>
+                <button type="submit" class="w-full bg-green-600 text-white font-semibold py-2 rounded-lg hover:bg-green-700 transition">Create Account</button>
                 <p id="signup-error" class="text-red-600 text-sm mt-2 hidden"></p>
             </form>
         </div>
@@ -72,8 +70,9 @@
                 <a href="#custom-prints" class="text-gray-600 hover:text-blue-600 transition-colors">Custom Prints</a>
                 
                 <!-- Auth Buttons -->
-                <div id="auth-links">
-                    <button id="open-login-modal" class="font-semibold text-blue-600 hover:text-blue-800">Login</button>
+                <div id="auth-links" class="flex items-center space-x-4">
+                    <button id="open-login-modal" class="font-semibold text-blue-600 hover:text-blue-800 transition-colors">Login</button>
+                    <button id="open-signup-modal" class="bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-700 transition-all duration-300">Sign Up</button>
                 </div>
     
                 <!-- User Profile Area (hidden by default) -->
@@ -181,6 +180,7 @@
         const userNameEl = document.getElementById('user-name');
         const mobileMenuEl = document.getElementById('mobile-menu');
         const openLoginModalBtn = document.getElementById('open-login-modal');
+        const openSignupModalBtn = document.getElementById('open-signup-modal');
 
         // --- AUTHENTICATION LOGIC ---
         async function checkAuthState() {
@@ -246,14 +246,19 @@
         function updateMobileMenu(isLoggedIn) {
             let menuHTML = `<a href="#gallery" class="block py-2 text-gray-600 hover:text-blue-600">Gallery</a><a href="#custom-prints" class="block py-2 text-gray-600 hover:text-blue-600">Custom Prints</a>`;
             if (isLoggedIn) {
-                menuHTML += `<button id='mobile-logout-btn' class='block mt-4 text-center bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:bg-blue-700 transition-all duration-300 ease-in-out transform hover:-translate-y-1 w-full'>Logout</button>`;
+                menuHTML += `<button id='mobile-logout-btn' class='block mt-4 text-center bg-red-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:bg-red-700 transition-all duration-300 ease-in-out transform hover:-translate-y-1 w-full'>Logout</button>`;
             } else {
-                menuHTML += `<button id='mobile-login-btn' class='block mt-4 text-center bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:bg-blue-700 transition-all duration-300 ease-in-out transform hover:-translate-y-1 w-full'>Login</button>`;
+                menuHTML += `
+                    <button id='mobile-login-btn' class='block mt-4 text-center bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:bg-blue-700 transition-all duration-300 ease-in-out transform hover:-translate-y-1 w-full'>Login</button>
+                    <button id='mobile-signup-btn' class='block mt-2 text-center bg-green-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:bg-green-700 transition-all duration-300 ease-in-out transform hover:-translate-y-1 w-full'>Sign Up</button>
+                `;
             }
             mobileMenuEl.innerHTML = menuHTML;
             if (!isLoggedIn) {
                 const mobileLoginBtn = document.getElementById('mobile-login-btn');
+                const mobileSignupBtn = document.getElementById('mobile-signup-btn');
                 if (mobileLoginBtn) mobileLoginBtn.onclick = () => loginModal.classList.remove('hidden');
+                if (mobileSignupBtn) mobileSignupBtn.onclick = () => signupModal.classList.remove('hidden');
             } else {
                 const mobileLogoutBtn = document.getElementById('mobile-logout-btn');
                 if (mobileLogoutBtn) mobileLogoutBtn.onclick = logout;
@@ -264,21 +269,21 @@
 
         // --- Login/Signup Modal Logic ---
         if (openLoginModalBtn) openLoginModalBtn.onclick = () => { loginModal.classList.remove('hidden'); loginError.classList.add('hidden'); };
+        if (openSignupModalBtn) openSignupModalBtn.onclick = () => { signupModal.classList.remove('hidden'); signupError.classList.add('hidden'); };
+        
         const closeLoginModalBtn = document.getElementById('close-login-modal');
         const closeSignupModalBtn = document.getElementById('close-signup-modal');
         const loginModal = document.getElementById('login-modal');
         const signupModal = document.getElementById('signup-modal');
         const loginError = document.getElementById('login-error');
         const signupError = document.getElementById('signup-error');
-        const showSignupBtn = document.getElementById('show-signup');
-        const showLoginBtn = document.getElementById('show-login');
         const customLoginForm = document.getElementById('custom-login-form');
         const customSignupForm = document.getElementById('custom-signup-form');
 
         if (closeLoginModalBtn) closeLoginModalBtn.onclick = () => loginModal.classList.add('hidden');
         if (closeSignupModalBtn) closeSignupModalBtn.onclick = () => signupModal.classList.add('hidden');
-        if (showSignupBtn) showSignupBtn.onclick = () => { loginModal.classList.add('hidden'); signupModal.classList.remove('hidden'); signupError.classList.add('hidden'); };
-        if (showLoginBtn) showLoginBtn.onclick = () => { signupModal.classList.add('hidden'); loginModal.classList.remove('hidden'); loginError.classList.add('hidden'); };
+        
+        // Close modals on Escape key or clicking outside
         window.addEventListener('keydown', (e) => { if (e.key === 'Escape') { loginModal.classList.add('hidden'); signupModal.classList.add('hidden'); } });
         loginModal.addEventListener('click', (e) => { if (e.target === loginModal) loginModal.classList.add('hidden'); });
         signupModal.addEventListener('click', (e) => { if (e.target === signupModal) signupModal.classList.add('hidden'); });
@@ -329,7 +334,7 @@
                 // Show loading state
                 const submitBtn = e.target.querySelector('button[type="submit"]');
                 const originalText = submitBtn.textContent;
-                submitBtn.textContent = 'Signing up...';
+                submitBtn.textContent = 'Creating Account...';
                 submitBtn.disabled = true;
                 
                 try {
