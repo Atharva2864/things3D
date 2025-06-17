@@ -1,24 +1,34 @@
 // Azure Function: /api/list-users
 // Lists all registered users (for testing purposes)
-const { TableClient, AzureNamedKeyCredential } = require("@azure/data-tables");
-
-const TABLE_NAME = "users";
-const ACCOUNT_NAME = process.env.AZURE_STORAGE_ACCOUNT;
-const ACCOUNT_KEY = process.env.AZURE_STORAGE_KEY;
-const ENDPOINT = `https://${ACCOUNT_NAME}.table.core.windows.net`;
+const storage = require("../shared/storage");
 
 module.exports = async function (context, req) {
-    // Validate environment variables
-    if (!ACCOUNT_NAME || !ACCOUNT_KEY) {
+    try {
+        const users = storage.getAllUsers();
+        
+        // Remove password hashes for security
+        const safeUsers = users.map(user => ({
+            email: user.email,
+            createdAt: user.createdAt
+        }));
+        
         context.res = { 
-            status: 500, 
-            body: { error: "Azure Storage configuration missing" },
+            status: 200, 
+            body: { 
+                users: safeUsers,
+                count: safeUsers.length
+            },
             headers: { 'Content-Type': 'application/json' }
         };
-        return;
+    } catch (error) {
+        context.log.error('Error in /api/list-users:', error);
+        context.res = { 
+            status: 500, 
+            body: { error: "Internal server error" },
+            headers: { 'Content-Type': 'application/json' }
+        };
     }
-    
-    const client = new TableClient(ENDPOINT, TABLE_NAME, new AzureNamedKeyCredential(ACCOUNT_NAME, ACCOUNT_KEY));
+};
     
     try {
         const users = [];

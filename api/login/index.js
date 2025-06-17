@@ -1,45 +1,46 @@
-// Azure Function: /api/login
-// Authenticates user and returns session (for demo, just returns user info)
-const { TableClient, AzureNamedKeyCredential } = require("@azure/data-tables");
 const crypto = require("crypto");
-
-const TABLE_NAME = "users";
-const ACCOUNT_NAME = process.env.AZURE_STORAGE_ACCOUNT;
-const ACCOUNT_KEY = process.env.AZURE_STORAGE_KEY;
-const ENDPOINT = `https://${ACCOUNT_NAME}.table.core.windows.net`;
+const storage = require("../shared/storage");
 
 module.exports = async function (context, req) {
-    // Validate environment variables
-    if (!ACCOUNT_NAME || !ACCOUNT_KEY) {
-        context.log.error('Missing Azure Storage environment variables');
-        return { status: 500, body: "Server configuration error." };
-    }
+    context.log('Login API called');
     
     const { email, password } = req.body || {};
     if (!email || !password) {
-        return { status: 400, body: "Email and password required." };
-    }
-    const hash = crypto.createHash('sha256').update(password).digest('hex');
-    const client = new TableClient(ENDPOINT, TABLE_NAME, new AzureNamedKeyCredential(ACCOUNT_NAME, ACCOUNT_KEY));
-    try {
-        let user = await client.getEntity(TABLE_NAME, email);
-        if (!user || user.password !== hash) {
-            return { status: 401, body: "Invalid credentials." };
-        }
-        // Generate session token
-        const sessionToken = crypto.randomBytes(32).toString('hex');
-        
-        // For demo purposes, we'll return the token and email
-        // In production, you'd store the session in a database or cache
-        return { 
-            status: 200, 
-            body: { 
-                user: { email: user.email },
-                token: sessionToken
-            } 
+        context.res = { 
+            status: 400, 
+            body: "Email and password required.",
+            headers: { 'Content-Type': 'application/json' }
         };
-    } catch (err) {
-        context.log.error(err);
-        return { status: 401, body: "Invalid credentials." };
+        return;
     }
+
+    // Hash password to compare
+    const hash = crypto.createHash('sha256').update(password).digest('hex');
+    
+    // Check if user exists and password matches
+    const user = storage.getUser(email);
+    if (!user || user.passwordHash !== hash) {
+        context.res = { 
+            status: 401, 
+            body: "Invalid email or password",
+            headers: { 'Content-Type': 'application/json' }
+        };
+        return;
+    }
+    
+    // Generate session token
+    const token = crypto.randomBytes(32).toString('hex');
+    storage.createSession(email, token);
+    
+    context.log('User logged in successfully:', email);
+    
+    context.res = {
+        status: 200,
+        body: {
+            message: "Login successful",
+            token: token,
+            user: { email: email }
+        },
+        headers: { 'Content-Type': 'application/json' }
+    };
 };

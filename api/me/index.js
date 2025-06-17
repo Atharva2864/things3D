@@ -1,5 +1,7 @@
 // Azure Function: /api/me
 // Returns user info if logged in based on Authorization header
+const storage = require("../shared/storage");
+
 module.exports = async function (context, req) {
     try {
         const authHeader = req.headers.authorization;
@@ -9,22 +11,24 @@ module.exports = async function (context, req) {
         
         const token = authHeader.substring(7); // Remove 'Bearer ' prefix
         
-        // For demo purposes, we'll validate any non-empty token
-        // In production, you'd validate against stored sessions
-        if (token && token.length > 10) {
-            // Extract email from token (simplified for demo)
-            // In production, you'd look up the session in database
-            const email = req.headers['x-user-email'] || 'user@example.com';
-            
-            return { 
-                status: 200, 
-                body: { 
-                    user: { email: email }
-                } 
-            };
+        // Validate token against stored sessions
+        const session = storage.getSession(token);
+        if (!session) {
+            return { status: 200, body: { user: null } };
         }
         
-        return { status: 200, body: { user: null } };
+        // Get user data
+        const user = storage.getUser(session.email);
+        if (!user) {
+            return { status: 200, body: { user: null } };
+        }
+        
+        return { 
+            status: 200, 
+            body: { 
+                user: { email: user.email }
+            } 
+        };
     } catch (error) {
         context.log.error('Error in /api/me:', error);
         return { status: 200, body: { user: null } };
